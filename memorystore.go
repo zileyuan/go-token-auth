@@ -41,6 +41,10 @@ func (s *MemoryTokenStore) NewToken(id interface{}, duration int64) *MemoryToken
 	return t
 }
 
+func (s *MemoryTokenStore) RemoveToken(strToken string) {
+	delete(s.tokens, strToken)
+}
+
 func NewMemoryTokenStore(salt string) *MemoryTokenStore {
 	return &MemoryTokenStore{
 		salt:     salt,
