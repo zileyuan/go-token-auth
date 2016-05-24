@@ -40,7 +40,7 @@ func (t *TokenAuth) Authenticate(tokenStr string) (Token, error) {
 	}
 	token, err := t.store.CheckToken(tokenStr)
 	if err != nil {
-		return nil, errors.New("Invalid token")
+		return nil, err
 	}
 	return token, nil
 }

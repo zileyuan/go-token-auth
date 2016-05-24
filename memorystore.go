@@ -53,7 +53,7 @@ func NewMemoryTokenStore(salt string) *MemoryTokenStore {
 func (s *MemoryTokenStore) CheckToken(strToken string) (Token, error) {
 	t, ok := s.tokens[strToken]
 	if !ok {
-		return nil, errors.New("Failed to authenticate")
+		return nil, errors.New("No this Token")
 	}
 	if t.ExpireAt.Before(time.Now()) {
 		delete(s.tokens, strToken)
