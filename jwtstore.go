@@ -13,8 +13,10 @@ type JwtStore struct {
 
 func (s *JwtStore) NewToken(id interface{}, duration int64) *JwtToken {
 	token := jwt.New(jwt.GetSigningMethod("HS256"))
-	token.Claims["jti"] = id
-	token.Claims["exp"] = time.Now().Add(time.Second * time.Duration(duration)).Unix()
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		claims["jti"] = id
+		claims["exp"] = time.Now().Add(time.Second * time.Duration(duration)).Unix()
+	}
 	t := &JwtToken{
 		tokenKey: s.tokenKey,
 		Token:    *token,

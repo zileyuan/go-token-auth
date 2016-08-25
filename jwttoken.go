@@ -12,24 +12,31 @@ type JwtToken struct {
 }
 
 func (t *JwtToken) Claims(key string) interface{} {
-	return t.Token.Claims[key]
+	if claims, ok := t.Token.Claims.(jwt.MapClaims); ok && t.Token.Valid {
+		return claims[key]
+	}
+	return nil
 }
 
 func (t *JwtToken) SetClaim(key string, value interface{}) ClaimSetter {
-	t.Token.Claims[key] = value
+	if claims, ok := t.Token.Claims.(jwt.MapClaims); ok && t.Token.Valid {
+		claims[key] = value
+	}
 	return t
 }
 
 func (t *JwtToken) Expiry() time.Time {
-	expt := t.Claims("exp")
-	var exp time.Time
-	switch t := expt.(type) {
-	case float64:
-		exp = time.Unix(int64(t), 0)
-	case int64:
-		exp = time.Unix(t, 0)
-	default:
-		exp = time.Now()
+	var exp time.Time = time.Now()
+	if claims, ok := t.Token.Claims.(jwt.MapClaims); ok && t.Token.Valid {
+		expt := claims["exp"]
+		switch t := expt.(type) {
+		case float64:
+			exp = time.Unix(int64(t), 0)
+		case int64:
+			exp = time.Unix(t, 0)
+		default:
+			exp = time.Now()
+		}
 	}
 	return exp
 }
