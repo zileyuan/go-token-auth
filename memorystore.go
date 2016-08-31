@@ -28,7 +28,7 @@ func (s *MemoryTokenStore) NewToken(id interface{}, duration int64) *MemoryToken
 	bToken := s.generateToken(strId)
 	strToken := base64.URLEncoding.EncodeToString(bToken)
 	t := &MemoryToken{
-		ExpireAt: time.Now().Add(time.Second * time.Duration(duration)),
+		ExpireAt: time.Now().Add((time.Duration)(duration) * time.Second),
 		Token:    strToken,
 		Id:       strId,
 	}
