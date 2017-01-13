@@ -4,8 +4,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"sync"
 	"time"
 )
+
+var Mutex *sync.Mutex //流水号锁
 
 type MemoryTokenStore struct {
 	tokens   map[string]*MemoryToken
@@ -24,6 +27,8 @@ func (s *MemoryTokenStore) generateToken(id string) []byte {
 }
 
 func (s *MemoryTokenStore) NewToken(id interface{}, duration int64) *MemoryToken {
+	Mutex.Lock()
+	defer Mutex.Unlock()
 	strId := id.(string)
 	bToken := s.generateToken(strId)
 	strToken := base64.URLEncoding.EncodeToString(bToken)
@@ -42,6 +47,8 @@ func (s *MemoryTokenStore) NewToken(id interface{}, duration int64) *MemoryToken
 }
 
 func (s *MemoryTokenStore) RemoveToken(strToken string) {
+	Mutex.Lock()
+	defer Mutex.Unlock()
 	delete(s.tokens, strToken)
 }
 
@@ -55,6 +62,8 @@ func NewMemoryTokenStore(salt string) *MemoryTokenStore {
 }
 
 func (s *MemoryTokenStore) CheckToken(strToken string) (Token, error) {
+	Mutex.Lock()
+	defer Mutex.Unlock()
 	t, ok := s.tokens[strToken]
 	if !ok {
 		return nil, errors.New("No this Token")
@@ -64,4 +73,8 @@ func (s *MemoryTokenStore) CheckToken(strToken string) (Token, error) {
 		return nil, errors.New("Token expired")
 	}
 	return t, nil
+}
+
+func Init() {
+	Mutex = &sync.Mutex{} //流水号锁
 }
