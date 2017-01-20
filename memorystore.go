@@ -8,12 +8,13 @@ import (
 	"time"
 )
 
-var Mutex *sync.Mutex //流水号锁
+// var Mutex *sync.Mutex //流水号锁
 
 type MemoryTokenStore struct {
 	tokens   map[string]*MemoryToken
 	idTokens map[string]*MemoryToken
 	salt     string
+	sync.Mutex
 }
 
 func (s *MemoryTokenStore) generateToken(id string) []byte {
@@ -27,8 +28,8 @@ func (s *MemoryTokenStore) generateToken(id string) []byte {
 }
 
 func (s *MemoryTokenStore) NewToken(id interface{}, duration int64) *MemoryToken {
-	Mutex.Lock()
-	defer Mutex.Unlock()
+	s.Lock()
+	defer s.Unlock()
 	strId := id.(string)
 	bToken := s.generateToken(strId)
 	strToken := base64.URLEncoding.EncodeToString(bToken)
@@ -47,8 +48,8 @@ func (s *MemoryTokenStore) NewToken(id interface{}, duration int64) *MemoryToken
 }
 
 func (s *MemoryTokenStore) RemoveToken(strToken string) {
-	Mutex.Lock()
-	defer Mutex.Unlock()
+	s.Lock()
+	defer s.Unlock()
 	delete(s.tokens, strToken)
 }
 
@@ -62,8 +63,8 @@ func NewMemoryTokenStore(salt string) *MemoryTokenStore {
 }
 
 func (s *MemoryTokenStore) CheckToken(strToken string) (Token, error) {
-	Mutex.Lock()
-	defer Mutex.Unlock()
+	s.Lock()
+	defer s.Unlock()
 	t, ok := s.tokens[strToken]
 	if !ok {
 		return nil, errors.New("No this Token")
@@ -75,6 +76,6 @@ func (s *MemoryTokenStore) CheckToken(strToken string) (Token, error) {
 	return t, nil
 }
 
-func Init() {
-	Mutex = &sync.Mutex{} //流水号锁
-}
+// func Init() {
+// 	Mutex = &sync.Mutex{} //流水号锁
+// }
